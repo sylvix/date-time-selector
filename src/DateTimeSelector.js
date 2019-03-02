@@ -1,98 +1,139 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Calendar from './Calendar'
-import { Button, InputGroup, InputGroupButton, Input } from 'reactstrap'
-import { parseDateTime } from 'date-time-parser'
+import { Button, InputGroup, InputGroupAddon, Input } from 'reactstrap'
+import moment from 'moment'
 
 export default class DateTimeSelector extends React.Component {
 
   state = {
     moment: null,
-    isValidDate: true,
+    value: '',
+    isValid: true,
     isCalendarVisible: false
   }
 
   static propTypes = {
-    value: PropTypes.string,
+    defaultValue: (props, propName) => {
+      if (props[propName] && !moment.isMoment(props[propName])) {
+        throw new Error('Not a moment object')
+      }
+    },
     onChange: PropTypes.func,
     buttonClasses: PropTypes.string,
-    inputClasses: PropTypes.string
+    inputClasses: PropTypes.string,
+    format: PropTypes.string
   }
 
   static defaultProps = {
-    value: '',
+    defaultValue: null,
     onChange: null,
     buttonClasses: '',
-    inputClasses: ''
+    inputClasses: '',
+    format: ''
   }
 
-  // componentDidMount () {
-  //   document.body.addEventListener('click', this.hideCalendar)
-  // }
-  //
-  // componentWillUnmount () {
-  //   document.body.removeEventListener('click', this.hideCalendar)
-  // }
-
-  hideCalendar = () => {
-    if (this.state.isCalendarVisible) {
-      this.setState({ isCalendarVisible: false })
-    }
+  attachOutsideClickListener = () => {
+    document.addEventListener('click', this.toggleCalendar, false)
   }
 
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.value !== this.props.value) {
-      this.update(nextProps.value)
-    }
+  detachOutsideClickListener = () => {
+    document.removeEventListener('click', this.toggleCalendar, false)
   }
 
   handleChange = (e) => {
     this.update(e.target.value)
   }
 
-  update (input) {
-    const mo = parseDateTime(input)
+  constructor (props) {
+    super(props)
 
-    this.setState({ isValid: mo, moment: mo })
-
-    if (this.props.onChange) {
-      this.props.onChange({value: input, moment: mo})
+    if (props.defaultValue && moment.isMoment(props.defaultValue)) {
+      this.state.moment = props.defaultValue
     }
   }
 
-  handleToggleCalendar = () => {
+  update (value) {
+    const mo = moment(value, this.props.format, true) // true means strict parsing
+
+    const isValid = mo.isValid()
+
+    const newState = {
+      value: value,
+      isValid,
+      moment: isValid ? mo : null
+    }
+
+    this.setState(newState, () => {
+      if (this.props.onChange && isValid) {
+        this.props.onChange({value: value, moment: mo})
+      }
+    })
+  }
+
+  toggleCalendar = event => {
+    console.log('in toggle', event)
+    if (event) {
+      if (event.target.closest('.picker')) return
+
+      event.stopPropagation()
+    }
+
+    if (this.state.isCalendarVisible) {
+      this.detachOutsideClickListener()
+    } else {
+      this.attachOutsideClickListener()
+    }
+
     this.setState({ isCalendarVisible: !this.state.isCalendarVisible })
   }
 
   handleCalendarSelection = (mo) => {
-    this.setState({ isCalendarVisible: false, isValid: mo }, () => {
+    const value = mo ? mo.format(this.props.format) : ''
+
+    this.setState({ isValid: true, value, moment: mo }, () => {
+      this.toggleCalendar()
+
       if (this.props.onChange) {
-        this.props.onChange({value: mo ? mo.format('L HH:mm:ss') : '', moment: mo})
+        this.props.onChange({value, moment: mo})
       }
     })
   }
 
   render () {
-    const { isValid, isCalendarVisible, moment } = this.state
-    const { buttonClasses, inputClasses, value, ...rest } = this.props
+    const { value, isValid, isCalendarVisible, moment: mo } = this.state
+    const { buttonClasses, inputClasses, defaultValue, format, ...rest } = this.props
+
+    let currentValue = value
+
+    if (!value && defaultValue) {
+      currentValue = defaultValue.format(format)
+    }
 
     return (
       <div className='position-relative'>
         <InputGroup>
           <Input
-            className={`form-control ${isValid ? '' : 'text-danger'} ${inputClasses}`}
-            value={value}
+            className={`form-control ${isValid ? '' : 'is-invalid'} ${inputClasses}`}
+            {...rest}
+            value={currentValue}
             onChange={this.handleChange}
-            {...rest} />
-          <InputGroupButton>
+          />
+          <InputGroupAddon addonType='append'>
             <Button
               className={buttonClasses}
-              onClick={this.handleToggleCalendar} >
+              onClick={this.toggleCalendar} >
               <i className='fa fa-calendar' />
             </Button>
-          </InputGroupButton>
+          </InputGroupAddon>
         </InputGroup>
-        <Calendar asDropDown visible={isCalendarVisible} value={moment} onSubmit={this.handleCalendarSelection} />
+        <Calendar
+          asDropDown
+          visible={isCalendarVisible}
+          value={mo}
+          onSubmit={this.handleCalendarSelection}
+          format={this.props.format}
+        />
       </div>
     )
   }

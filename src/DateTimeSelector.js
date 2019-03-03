@@ -22,7 +22,8 @@ export default class DateTimeSelector extends React.Component {
     onChange: PropTypes.func,
     buttonClasses: PropTypes.string,
     inputClasses: PropTypes.string,
-    format: PropTypes.string
+    format: PropTypes.string,
+    disableTime: PropTypes.bool
   }
 
   static defaultProps = {
@@ -30,7 +31,8 @@ export default class DateTimeSelector extends React.Component {
     onChange: null,
     buttonClasses: '',
     inputClasses: '',
-    format: ''
+    format: '',
+    disableTime: false
   }
 
   attachOutsideClickListener = () => {
@@ -72,7 +74,6 @@ export default class DateTimeSelector extends React.Component {
   }
 
   toggleCalendar = event => {
-    console.log('in toggle', event)
     if (event) {
       if (event.target.closest('.picker')) return
 
@@ -102,7 +103,7 @@ export default class DateTimeSelector extends React.Component {
 
   render () {
     const { value, isValid, isCalendarVisible, moment: mo } = this.state
-    const { buttonClasses, inputClasses, defaultValue, format, ...rest } = this.props
+    const { buttonClasses, inputClasses, defaultValue, format } = this.props
 
     let currentValue = value
 
@@ -115,7 +116,6 @@ export default class DateTimeSelector extends React.Component {
         <InputGroup>
           <Input
             className={`form-control ${isValid ? '' : 'is-invalid'} ${inputClasses}`}
-            {...rest}
             value={currentValue}
             onChange={this.handleChange}
           />
@@ -133,6 +133,7 @@ export default class DateTimeSelector extends React.Component {
           value={mo}
           onSubmit={this.handleCalendarSelection}
           format={this.props.format}
+          disableTime={this.props.disableTime}
         />
       </div>
     )

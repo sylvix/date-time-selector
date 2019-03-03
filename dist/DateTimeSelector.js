@@ -4,8 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
@@ -27,8 +25,6 @@ var _moment = require('moment');
 var _moment2 = _interopRequireDefault(_moment);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -81,13 +77,12 @@ var DateTimeSelector = function (_React$Component) {
           isValid = _state.isValid,
           isCalendarVisible = _state.isCalendarVisible,
           mo = _state.moment;
-
       var _props = this.props,
           buttonClasses = _props.buttonClasses,
           inputClasses = _props.inputClasses,
           defaultValue = _props.defaultValue,
-          format = _props.format,
-          rest = _objectWithoutProperties(_props, ['buttonClasses', 'inputClasses', 'defaultValue', 'format']);
+          format = _props.format;
+
 
       var currentValue = value;
 
@@ -101,12 +96,11 @@ var DateTimeSelector = function (_React$Component) {
         _react2.default.createElement(
           _reactstrap.InputGroup,
           null,
-          _react2.default.createElement(_reactstrap.Input, _extends({
-            className: 'form-control ' + (isValid ? '' : 'is-invalid') + ' ' + inputClasses
-          }, rest, {
+          _react2.default.createElement(_reactstrap.Input, {
+            className: 'form-control ' + (isValid ? '' : 'is-invalid') + ' ' + inputClasses,
             value: currentValue,
             onChange: this.handleChange
-          })),
+          }),
           _react2.default.createElement(
             _reactstrap.InputGroupAddon,
             { addonType: 'append' },
@@ -124,7 +118,8 @@ var DateTimeSelector = function (_React$Component) {
           visible: isCalendarVisible,
           value: mo,
           onSubmit: this.handleCalendarSelection,
-          format: this.props.format
+          format: this.props.format,
+          disableTime: this.props.disableTime
         })
       );
     }
@@ -142,14 +137,16 @@ DateTimeSelector.propTypes = {
   onChange: _propTypes2.default.func,
   buttonClasses: _propTypes2.default.string,
   inputClasses: _propTypes2.default.string,
-  format: _propTypes2.default.string
+  format: _propTypes2.default.string,
+  disableTime: _propTypes2.default.bool
 };
 DateTimeSelector.defaultProps = {
   defaultValue: null,
   onChange: null,
   buttonClasses: '',
   inputClasses: '',
-  format: ''
+  format: '',
+  disableTime: false
 };
 
 var _initialiseProps = function _initialiseProps() {
@@ -175,7 +172,6 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.toggleCalendar = function (event) {
-    console.log('in toggle', event);
     if (event) {
       if (event.target.closest('.picker')) return;
 
